@@ -27,6 +27,8 @@ router.post('/', async (req, res) => {
 
         // 作成した投稿をレスポンスとして返す
         res.status(201).json(newPost);
+
+        console.log(`posted. \ntitle: ${newPost.title}`)
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to create post' });
