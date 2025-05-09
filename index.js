@@ -1,11 +1,17 @@
 const express = require('express')
+
+const postAPI = require('./api/post')
+const sampleAPI = require('./api/sample')
+
 const app = express()
-const port = 3000
+const PORT = 3000
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
+// ExpressでJsonを取得 https://zenn.dev/urinco/articles/e3932af54c020e
+app.use(express.json())
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+app.use('/api/hello', sampleAPI); // サンプル
+app.use('/api/posts', postAPI);
+
+app.listen(PORT, () => {
+    console.log(`Example app listening on port ${PORT}`)
 })
