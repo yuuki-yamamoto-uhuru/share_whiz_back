@@ -5,7 +5,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const router = express.Router();
 
-
+// TODO: 引数にレスポンスを含めてる理由を調べる。
 router.post('/', async (req, res) => {
     const { title, content } = req.body;
 
