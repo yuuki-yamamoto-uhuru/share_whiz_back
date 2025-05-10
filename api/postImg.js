@@ -2,6 +2,8 @@ const express = require('express');
 // multer: クライアントからアップロードしてきたファイルを処理するためのミドルウェア
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+const ApiError = require('../utils/status/ApiError');
 
 const router = express.Router();
 
@@ -28,30 +30,34 @@ const storage = multer.diskStorage({
 // NOTE: 習慣的にはuploadが適切らしい、が、僕は納得がいかないのでreceiveにした。
 const receive = multer({ storage: storage });
 
-// POST リクエストを受け取って画像を保存するエンドポイント
-router.post('/', receive.single('image'), (req, res) => {
-    if (!req.body.id) {
-        return res.status(400).json({ error: 'ID is required' });
-    }
-    if (!req.file) {
-        return res.status(400).json({ error: 'Image is required' });
-    }
+// NOTE: POST リクエストを受け取って画像を保存するエンドポイント
+// NOTE: この時点で既にミドルウェアは処理を完了しており、imgフォルダに受け取った画像が保管されている。
+try {
+    router.post('/', receive.single('image'), (req, res) => {
+        if (!req.body.id) {
+            throw new ApiError(400, "ID is required", req.body)
+        }
+        if (!req.file) {
+            // throw new ApiError(400, "Image is required", req.file)
+            throw new ApiError(400, "Image is required")
+        }
 
-    const fs = require('fs');
-    const path = require('path');
+        const oldPath = req.file.path;
+        const extension = path.extname(req.file.originalname);
+        const newPath = path.join(req.file.destination, `${req.body.id}${extension}`);
 
-    const oldPath = req.file.path;
-    const extension = path.extname(req.file.originalname);
-    const newPath = path.join(req.file.destination, `${req.body.id}${extension}`);
+        fs.renameSync(oldPath, newPath);
 
-    fs.renameSync(oldPath, newPath);
+        console.log(`imgName: ${req.body.id}${extension}`)
 
-    console.log(`saved.\nimgName: ${req.body.id}${extension}`)
-
-    res.status(200).json({
-        message: 'Saved Image',
-        file: { ...req.file, filename: `${req.body.id}${extension}` }
+        res.status(201).json({
+            message: 'Saved Image',
+            file: { ...req.file, filename: `${req.body.id}${extension}` }
+        });
     });
-});
+} catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to receive image' });
+}
 
 module.exports = router;
