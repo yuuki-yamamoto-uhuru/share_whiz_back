@@ -1,4 +1,5 @@
 // routes/posts.js
+// TODO: ステータスコードどうするか問題
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 
@@ -13,7 +14,7 @@ router.post('/', async (req, res) => {
     if (!title || !content) {
         console.log(title)
         console.log(content)
-        return res.status(400).json({ error: 'Title and content are required' });
+        return res.status(400).json({ error: 'Title or content is required' });
     }
 
     try {
@@ -28,7 +29,9 @@ router.post('/', async (req, res) => {
         // 作成した投稿をレスポンスとして返す
         res.status(201).json(newPost);
 
-        console.log(`posted. \ntitle: ${newPost.title}`)
+        let d = new Date();
+        console.log(`【new post (${d})】`)
+        console.log(`title: ${newPost.title}`)
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to create post' });
